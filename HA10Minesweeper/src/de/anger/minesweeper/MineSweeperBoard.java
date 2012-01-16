@@ -1,4 +1,4 @@
-package de.darmstadt.tu.gdi1.ha10;
+package de.anger.minesweeper;
 
 import java.util.Random;
 
@@ -9,11 +9,8 @@ public class MineSweeperBoard {
 	public int tags;
 	public int myRow;
 	public int myCol;
+	public int myMines;
 
-	// @TODO come up with a "good" model for representing
-	// the game board!
-
-	// add appropriate additional __private__ attributes
 
 	/**
 	 * creates a new MineSweeper game board
@@ -28,8 +25,9 @@ public class MineSweeperBoard {
 	public MineSweeperBoard(int rows, int cols, int nrMines) {
 		Random mines = new Random();
 		tags = nrMines;
-		row = rows;
-		col = cols;
+		int row = rows;
+		int col = cols;
+		myMines = nrMines;
 
 		for (int i = nrMines; i <= 0; i--) {
 			int xField = mines.nextInt(cols);
@@ -50,7 +48,20 @@ public class MineSweeperBoard {
 	 *            the mine board, true meaning "here is a mine"
 	 */
 	public MineSweeperBoard(boolean[][] mineBoard) {
-		// @TODO
+		int nrMines = 0;
+		mineSweeperBoard = mineBoard;
+		
+		for ( int i = 0; i <= mineBoard.length; i++){
+			for (int j = 0; j <= mineBoard.length; j++){
+				if ( mineBoard[i][j] == true){
+					nrMines++;
+				}
+			}
+		}
+		
+		tags = nrMines;
+		myMines = nrMines;
+		
 	}
 
 	/**
@@ -72,8 +83,17 @@ public class MineSweeperBoard {
 	 *         neighboring mines. It will thus not "give away secrets".</li>
 	 *         </ol>
 	 */
-	int getVisibleValueFor(int row, int col) {
-		return visibleMineSweeperBoard[col][row];
+	public int getVisibleValueFor(int row, int col) {
+		
+		if ( visibleMineSweeperBoard[col][row] == 10){
+			return 10;
+		}
+		
+		if ( visibleMineSweeperBoard[col][row] == 20){
+			return 20;
+		}
+		
+		return getValueOfNearMines(row,col);
 	}
 
 	private int getValueOfNearMines(int row, int col) {
@@ -106,6 +126,7 @@ public class MineSweeperBoard {
 		if (mineSweeperBoard[row][col] == true) {
 			value++;
 		}
+		
 
 		return value;
 	}
@@ -122,7 +143,7 @@ public class MineSweeperBoard {
 	 * @return true if the user has stepped on a mine; false if it was not a
 	 *         mine <em>or</em> an illegal position.
 	 */
-	boolean stepOn(int row, int col) {
+	public boolean stepOn(int row, int col) {
 		
 		if (myRow < row ||myCol < col) {
 			return false;
@@ -132,11 +153,8 @@ public class MineSweeperBoard {
 			return true;
 		}else{
 			visibleMineSweeperBoard[col][row] = getValueOfNearMines(row, col);
+			return false;
 		}
-			
-		
-		
-		return false; // only here so we do not get compile errors!
 	}
 
 	/**
@@ -157,12 +175,12 @@ public class MineSweeperBoard {
 			return false;
 		}
 
-		if (visibleMineSweeperBoard[col][row] == 10) {
-			visibleMineSweeperBoard[col][row] = 20;
+		if (visibleMineSweeperBoard[cols][rows] == 10) {
+			visibleMineSweeperBoard[cols][rows] = 20;
 			tags++;
 		}
-		if (visibleMineSweeperBoard[col][row] == 20) {
-			visibleMineSweeperBoard[col][row] = 10;
+		if (visibleMineSweeperBoard[cols][rows] == 20) {
+			visibleMineSweeperBoard[cols][rows] = 10;
 			tags--;
 		}
 		return true; // only here so we do not get compile errors!
@@ -174,7 +192,13 @@ public class MineSweeperBoard {
 	 * @return true if the game was lost by stepping on a mine
 	 */
 	boolean gameIsLost() {
-		// @TODO
+		for (int i = 0; i <= visibleMineSweeperBoard.length; i++){
+			for (int j = 0; j <= visibleMineSweeperBoard.length; j++){
+				if (visibleMineSweeperBoard[i][j] == 9){
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -184,8 +208,14 @@ public class MineSweeperBoard {
 	 * @return true if the game was won by tagging exactly all mines
 	 */
 	boolean gameIsWon() {
-		// @TODO
-		return false;
+		for (int i = 0; i <= visibleMineSweeperBoard.length; i++){
+			for (int j = 0; j <= visibleMineSweeperBoard.length; j++){
+				if (mineSweeperBoard[i][j] == true && visibleMineSweeperBoard[i][j] != 10){
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -194,9 +224,8 @@ public class MineSweeperBoard {
 	 * @return the number of tags left - between 0 (all placed) and the number
 	 *         of mines on the field (no tags placed)
 	 */
-	int nrOfTagsLeft() {
-		// @TODO
-		return 1;
+	public int nrOfTagsLeft() {
+		return tags;
 	}
 
 	/**
@@ -204,9 +233,8 @@ public class MineSweeperBoard {
 	 * 
 	 * @return the number of mines placed on the board
 	 */
-	int nrOfMines() {
-		// @TODO
-		return 1;
+	public int nrOfMines() {
+		return myMines;
 	}
 
 	/**
