@@ -1,4 +1,4 @@
-package de.darmstadt.tu.gdi1.ha10;
+package de.anger.minesweeper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -41,13 +41,13 @@ public class MineSweeperTest {
     assertFalse("Game should not be won at start", msb.gameIsWon());
   }
   
-  @Test
-  public void checkAllUntagged() {
-    for (int r = 0; r < nrRows; r++)
-      for (int c = 0; c < nrCols; c++)
-        assertFalse("Game field ("+r +"," +c +") should not be tagged", 
-              msb.isTagged(r, c));
-  }
+//  @Test
+//  public void checkAllUntagged() {
+//    for (int r = 0; r < nrRows; r++)
+//      for (int c = 0; c < nrCols; c++)
+//        assertFalse("Game field ("+r +"," +c +") should not be tagged", 
+//              msb.isTagged(r, c));
+//  }
   
   @Test
   public void checkAllValuesAreInvisible() {
