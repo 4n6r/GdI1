@@ -11,7 +11,6 @@ public class MineSweeperBoard {
 	public int myCol;
 	public int myMines;
 
-
 	/**
 	 * creates a new MineSweeper game board
 	 * 
@@ -29,9 +28,28 @@ public class MineSweeperBoard {
 		int col = cols;
 		myMines = nrMines;
 
+		mineSweeperBoard = new boolean[rows][cols];
+		visibleMineSweeperBoard = new int[rows][cols];
+
+		for (int i = nrMines; i > 0; i--) {
+			boolean breakpoint = false;
+			while (breakpoint == false) {
+				int xField = mines.nextInt(rows);
+				int yField = mines.nextInt(cols);
+
+				if (mineSweeperBoard[xField][yField] == true) {
+					// Wenn dort schon Mine lass Schleife mit neuen Zahlen
+					// weiterlaufen
+				} else {
+					mineSweeperBoard[xField][yField] = true;
+					break;
+				}
+			}
+		}
+
 		for (int i = nrMines; i <= 0; i--) {
-			int xField = mines.nextInt(cols);
-			int yField = mines.nextInt(rows);
+			int xField = mines.nextInt(rows);
+			int yField = mines.nextInt(cols);
 
 			if (mineSweeperBoard[xField][yField] == true) {
 				// nochmal aufrufen mit anderem Random
@@ -50,18 +68,21 @@ public class MineSweeperBoard {
 	public MineSweeperBoard(boolean[][] mineBoard) {
 		int nrMines = 0;
 		mineSweeperBoard = mineBoard;
-		
-		for ( int i = 0; i <= mineBoard.length; i++){
-			for (int j = 0; j <= mineBoard.length; j++){
-				if ( mineBoard[i][j] == true){
+		visibleMineSweeperBoard = new int[mineSweeperBoard.length][mineSweeperBoard[0].length];
+
+		for (int i = 0; i < mineSweeperBoard.length; i++) {
+			for (int j = 0; j < mineSweeperBoard[i].length; j++) {
+				if (mineBoard[i][j] == true) {
 					nrMines++;
 				}
 			}
 		}
-		
+
 		tags = nrMines;
 		myMines = nrMines;
-		
+		myRow = mineSweeperBoard.length;
+		myCol = mineSweeperBoard[0].length;
+
 	}
 
 	/**
@@ -84,49 +105,75 @@ public class MineSweeperBoard {
 	 *         </ol>
 	 */
 	public int getVisibleValueFor(int row, int col) {
-		
-		if ( visibleMineSweeperBoard[col][row] == 10){
-			return 10;
-		}
-		
-		if ( visibleMineSweeperBoard[col][row] == 20){
+
+		if (visibleMineSweeperBoard[row][col] == 0){
 			return 20;
 		}
 		
-		return getValueOfNearMines(row,col);
+		if (visibleMineSweeperBoard[row][col] == 10) {
+			return 10;
+		}	
+		
+		if (visibleMineSweeperBoard[row][col] <= 9) {
+			return visibleMineSweeperBoard[row][col];
+		}
+
+		return 20;
 	}
 
 	private int getValueOfNearMines(int row, int col) {
 		int value = 0;
 
-		if (mineSweeperBoard[row - 1][col - 1] == true) {
+//		if(col == 0){
+//			if (mineSweeperBoard[row - 1][col] == true) {
+//				value++;
+//			}
+//			if (mineSweeperBoard[row + 1][col] == true) {
+//				value++;
+//			}
+//			if (mineSweeperBoard[row - 1][col + 1] == true) {
+//				value++;
+//			}
+//			if (mineSweeperBoard[row][col + 1] == true) {
+//				value++;
+//			}
+//			if (mineSweeperBoard[row + 1][col + 1] == true) {
+//				value++;
+//			}
+//			if (mineSweeperBoard[row][col] == true) {
+//				value++;
+//			}
+//		}
+//		
+//		if (col == myCol)
+
+		if (row != 0 && col != 0 && mineSweeperBoard[row - 1][col - 1] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row][col - 1] == true) {
+		if (col != 0 && mineSweeperBoard[row][col - 1] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row + 1][col - 1] == true) {
+		if (col != 0 && row < myRow-- && mineSweeperBoard[row + 1][col - 1] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row - 1][col] == true) {
+		if (row != 0 && mineSweeperBoard[row - 1][col] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row + 1][col] == true) {
+		if (row < myRow-- && mineSweeperBoard[row + 1][col] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row - 1][col + 1] == true) {
+		if (row != 0 && col < myCol-- && mineSweeperBoard[row - 1][col + 1] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row][col + 1] == true) {
+		if (col < myCol-- && mineSweeperBoard[row][col + 1] == true) {
 			value++;
 		}
-		if (mineSweeperBoard[row + 1][col + 1] == true) {
+		if (row < myRow-- && col < myCol-- && mineSweeperBoard[row + 1][col + 1] == true) {
 			value++;
 		}
 		if (mineSweeperBoard[row][col] == true) {
 			value++;
 		}
-		
 
 		return value;
 	}
@@ -144,15 +191,20 @@ public class MineSweeperBoard {
 	 *         mine <em>or</em> an illegal position.
 	 */
 	public boolean stepOn(int row, int col) {
-		
-		if (myRow < row ||myCol < col) {
+
+		if (myRow < row || myCol < col) {
 			return false;
-			}
-		
-		if (mineSweeperBoard[col][row] == true){
+		}
+
+		if (row < 0 || col < 0) {
+			return false;
+		}
+
+		if (mineSweeperBoard[row][col] == true) {
+			visibleMineSweeperBoard[row][col] = 9;
 			return true;
-		}else{
-			visibleMineSweeperBoard[col][row] = getValueOfNearMines(row, col);
+		} else {
+			visibleMineSweeperBoard[row][col] = getValueOfNearMines(row, col);
 			return false;
 		}
 	}
@@ -168,22 +220,30 @@ public class MineSweeperBoard {
 	 */
 	boolean tagField(int rows, int cols) {
 
-		if (rows >= myRow || cols >= myCol) {
+		if (rows > myRow || cols > myCol) {
 			return false;
 		}
+
+		if (rows < 0 || cols < 0) {
+			return false;
+		}
+
 		if (tags == 0) {
 			return false;
 		}
 
-		if (visibleMineSweeperBoard[cols][rows] == 10) {
-			visibleMineSweeperBoard[cols][rows] = 20;
+		if (visibleMineSweeperBoard[rows][cols] == 10) {
+			visibleMineSweeperBoard[rows][cols] = 20;
 			tags++;
+			return true;
+		} else {
+			if (visibleMineSweeperBoard[rows][cols] == 20) {
+				visibleMineSweeperBoard[rows][cols] = 10;
+				tags--;
+				return true;
+			}
 		}
-		if (visibleMineSweeperBoard[cols][rows] == 20) {
-			visibleMineSweeperBoard[cols][rows] = 10;
-			tags--;
-		}
-		return true; // only here so we do not get compile errors!
+		return true;
 	}
 
 	/**
@@ -192,9 +252,9 @@ public class MineSweeperBoard {
 	 * @return true if the game was lost by stepping on a mine
 	 */
 	boolean gameIsLost() {
-		for (int i = 0; i <= visibleMineSweeperBoard.length; i++){
-			for (int j = 0; j <= visibleMineSweeperBoard.length; j++){
-				if (visibleMineSweeperBoard[i][j] == 9){
+		for (int i = 0; i < visibleMineSweeperBoard.length; i++) {
+			for (int j = 0; j < visibleMineSweeperBoard[i].length; j++) {
+				if (visibleMineSweeperBoard[i][j] == 9) {
 					return true;
 				}
 			}
@@ -208,9 +268,10 @@ public class MineSweeperBoard {
 	 * @return true if the game was won by tagging exactly all mines
 	 */
 	boolean gameIsWon() {
-		for (int i = 0; i <= visibleMineSweeperBoard.length; i++){
-			for (int j = 0; j <= visibleMineSweeperBoard.length; j++){
-				if (mineSweeperBoard[i][j] == true && visibleMineSweeperBoard[i][j] != 10){
+		for (int i = 0; i < visibleMineSweeperBoard.length; i++) {
+			for (int j = 0; j < visibleMineSweeperBoard[i].length; j++) {
+				if (mineSweeperBoard[i][j] == true
+						&& visibleMineSweeperBoard[i][j] != 10) {
 					return false;
 				}
 			}
@@ -244,8 +305,90 @@ public class MineSweeperBoard {
 	 *         board
 	 */
 	public String toString() {
-		// @TODO
-		return ""; // only here to prevent compile errors
+		StringBuilder myString = new StringBuilder();
+		myString.append("   ");
+		for (int i = 0; i <= visibleMineSweeperBoard.length; i++) {
+			if (i < 10) {
+				myString.append(0);
+			} else {
+				int zahl = i++;
+				zahl = Integer.parseInt(String.valueOf(zahl).substring(1));
+				myString.append(zahl);
+			}
+		}
+		myString.append("/n");
+		myString.append("   ");
+		for (int i = 0; i <= visibleMineSweeperBoard.length; i++){
+			if (i < 10) {
+				myString.append(i++);
+			} else {
+				int zahl = i++;
+				zahl = Integer.parseInt(String.valueOf(zahl).substring(2));
+				myString.append(zahl);
+			}
+		}
+		for (int i = 0; i <= visibleMineSweeperBoard[0].length; i++) {
+			
+			myString.append("/n");
+
+			if (i < 10) {
+				myString.append(0);
+			} else {
+				int zahl = i++;
+				zahl = Integer.parseInt(String.valueOf(zahl).substring(1));
+				myString.append(zahl);
+			}
+
+			if (i < 10) {
+				myString.append(i++);
+			} else {
+				int zahl = i++;
+				zahl = Integer.parseInt(String.valueOf(zahl).substring(2));
+				myString.append(zahl);
+			}
+
+			if (gameIsWon() || gameIsLost()) {
+				for (int j = 0; j <= visibleMineSweeperBoard[i].length; j++) {
+					if (getVisibleValueFor(j, i) == 9) {
+						myString.append("M");
+					} else {
+						myString.append(getVisibleValueFor(j, i));
+					}
+
+				}
+			} else {
+
+				for (int j = 0; j <= visibleMineSweeperBoard[i].length; j++) {
+					if (getVisibleValueFor(j, i) == 10) {
+						myString.append("?");
+					}
+					if (getVisibleValueFor(j, i) == 9) {
+						myString.append("M");
+					}
+					if (getVisibleValueFor(j, i) < 9) {
+						myString.append(getVisibleValueFor(j, i));
+					} else {
+						myString.append(" ");
+					}
+
+				}
+			}
+		}
+
+		return myString.toString();
 	}
 
+	/**
+	 * Checks if field is tagged
+	 * @param row Reihe des Spielbretts
+	 * @param col Spalte des Spielbretts
+	 * @return true wenn getagged, andernfalls false
+	 */
+	public boolean isTagged(int row, int col) {
+		if (visibleMineSweeperBoard[row][col] == 10){
+			return true;
+		}else{
+			return false;
+		}
+	}
 }
